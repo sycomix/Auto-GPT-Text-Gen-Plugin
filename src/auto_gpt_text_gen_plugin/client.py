@@ -73,7 +73,7 @@ class Client:
             'max_tokens': int(max_tokens)
         }
         response = requests.post(self.base_url + self.API_ENDPOINT_GENERATE, json=request)
-        
+
         # Process the result
         if response.status_code == 200:
 
@@ -101,7 +101,7 @@ class Client:
                 f"{Fore.LIGHTRED_EX}Auto-GPT-Text-Gen-Plugin:{Fore.RESET}\n"
                 f"{Fore.RED}Error: Response status code {response.status_code}{Fore.RESET}"
             )
-            return "Error: " + response.text
+            return f"Error: {response.text}"
 
 
     def get_embedding(self,text):
@@ -110,8 +110,10 @@ class Client:
         )
         request = {'text':str(text)}
 
-        response = requests.post(self.base_url+'/api/v1/get-embeddings', json=request)
-        
+        response = requests.post(
+            f'{self.base_url}/api/v1/get-embeddings', json=request
+        )
+
         if response.status_code == 200:
             logger.debug(
                 f"{Fore.LIGHTRED_EX}Auto-GPT-Text-Gen-Plugin:{Fore.RESET} Got response {response.json()}"

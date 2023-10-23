@@ -145,7 +145,7 @@ class PromptEngine:
 
         response = ''
 
-        if container == '' and attribute in self.prompt_profile:
+        if not container and attribute in self.prompt_profile:
             response = self.prompt_profile[attribute]
         elif container in self.prompt_profile and attribute in self.prompt_profile[container]:
             response = self.prompt_profile[container][attribute]
@@ -183,11 +183,11 @@ class PromptEngine:
             list: The agent's goals.
         """
 
-        goals_list = ''
-        for i, goal in enumerate(self.ai_config.ai_goals):
-            goals_list += f"{i+1}. {goal.strip()}\n"
-
-        return str(goals_list).replace('\\n', '\n')
+        goals_list = ''.join(
+            f"{i + 1}. {goal.strip()}\n"
+            for i, goal in enumerate(self.ai_config.ai_goals)
+        )
+        return goals_list.replace('\\n', '\n')
     
 
     def get_profile_list_as_line(self, attribute:str, container:str = '') -> str:
@@ -202,18 +202,15 @@ class PromptEngine:
             str: The list as a string.
         """
 
-        response = ''
         list_items = []
 
-        if container == '' and attribute in self.prompt_profile:
+        if not container and attribute in self.prompt_profile:
             list_items = self.prompt_profile[attribute]
         elif container in self.prompt_profile and attribute in self.prompt_profile[container]:
             list_items = self.prompt_profile[container][attribute]
 
-        for item in list_items:
-            response += item + ' '
-
-        return str(response).replace('\\n', '\n')
+        response = ''.join(f'{item} ' for item in list_items)
+        return response.replace('\\n', '\n')
     
 
     def get_profile_numbered_list(self, attribute:str, container:str = '') -> str:
@@ -228,18 +225,15 @@ class PromptEngine:
             str: The list as a string.
         """
 
-        response = ''
         list_items = []
 
-        if container == '' and attribute in self.prompt_profile:
+        if not container and attribute in self.prompt_profile:
             list_items = self.prompt_profile[attribute]
         elif container in self.prompt_profile and attribute in self.prompt_profile[container]:
             list_items = self.prompt_profile[container][attribute]
 
-        for i, item in enumerate(list_items):
-            response += f'{i + 1}. {item}\n'
-
-        return str(response).replace('\\n', '\n')
+        response = ''.join(f'{i + 1}. {item}\n' for i, item in enumerate(list_items))
+        return response.replace('\\n', '\n')
 
     def extract_from_original(self, regex:str) -> str:
         """
@@ -326,7 +320,7 @@ class PromptEngine:
 
         response = ''
 
-        if container == '' and attribute in self.prompt_profile:
+        if not container and attribute in self.prompt_profile:
             response = json.dumps(self.prompt_profile[attribute])
         elif container in self.prompt_profile and attribute in self.prompt_profile[container]:
             response = json.dumps(self.prompt_profile[container][attribute])
@@ -348,7 +342,7 @@ class PromptEngine:
             str: The stripped string.
         """
 
-        return str(text).replace('\n', ' ')
+        return text.replace('\n', ' ')
     
 
     def get_command_list(self) -> str:
@@ -378,7 +372,7 @@ class PromptEngine:
         response = ''
 
         response += self.get_profile_attribute('lead_in', 'strings')
-        response += self.get_agent_name() + ', '
+        response += f'{self.get_agent_name()}, '
         response += self.get_agent_role()
         response += self.get_profile_list_as_line('general_guidance', 'strings')
         response += self.get_profile_attribute('os_prompt', 'strings')

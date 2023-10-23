@@ -23,13 +23,15 @@ def run_cmd(cmd, assert_success=False, environment=False, capture_output=False, 
         else:
             conda_sh_path = os.path.join(script_dir, "installer_files", "conda", "etc", "profile.d", "conda.sh")
             cmd = ". \"" + conda_sh_path + "\" && conda activate \"" + conda_env_path + "\" && " + cmd
-    
+
     # Run shell commands
     result = subprocess.run(cmd, shell=True, capture_output=capture_output, env=env)
-    
+
     # Assert the command ran successfully
     if assert_success and result.returncode != 0:
-        print("Command '" + cmd + "' failed with exit status code '" + str(result.returncode) + "'. Exiting...")
+        print(
+            f"Command '{cmd}' failed with exit status code '{str(result.returncode)}'. Exiting..."
+        )
         sys.exit()
     return result
 
@@ -64,7 +66,7 @@ def install_dependencies():
     elif gpuchoice == "b":
         print("AMD GPUs are not supported. Exiting...")
         sys.exit()
-    elif gpuchoice == "c" or gpuchoice == "d":
+    elif gpuchoice in ["c", "d"]:
         run_cmd("conda install -y -k pytorch torchvision torchaudio cpuonly git -c pytorch", assert_success=True, environment=True)
     else:
         print("Invalid choice. Exiting...")
@@ -75,7 +77,7 @@ def install_dependencies():
     if sys.platform.startswith("win"):
         # Fix a bitsandbytes compatibility issue with Windows
         run_cmd("python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/raw/main/bitsandbytes-0.38.1-py3-none-any.whl", assert_success=True, environment=True)
-    
+
     # Install the webui dependencies
     update_dependencies()
 
@@ -90,10 +92,14 @@ def update_dependencies():
     for extension in extensions:
         if extension in ['superbooga']:  # No wheels available for dependencies
             continue
-            
+
         extension_req_path = os.path.join("extensions", extension, "requirements.txt")
         if os.path.exists(extension_req_path):
-            run_cmd("python -m pip install -r " + extension_req_path + " --upgrade", assert_success=True, environment=True)
+            run_cmd(
+                f"python -m pip install -r {extension_req_path} --upgrade",
+                assert_success=True,
+                environment=True,
+            )
 
     # The following dependencies are for CUDA, not CPU
     # Check if the package cpuonly exists to determine if torch uses CUDA or not
@@ -118,17 +124,17 @@ def update_dependencies():
 
     if not os.path.exists("repositories/"):
         os.mkdir("repositories")
-    
+
     # Install GPTQ-for-LLaMa which enables 4bit CUDA quantization
     os.chdir("repositories")
     if not os.path.exists("GPTQ-for-LLaMa/"):
         run_cmd("git clone https://github.com/oobabooga/GPTQ-for-LLaMa.git -b cuda", assert_success=True, environment=True)
-    
+
     # Install GPTQ-for-LLaMa dependencies
     os.chdir("GPTQ-for-LLaMa")
     run_cmd("git pull", assert_success=True, environment=True)
     run_cmd("python -m pip install -r requirements.txt", assert_success=True, environment=True)
-    
+
     # On some Linux distributions, g++ may not exist or be the wrong version to compile GPTQ-for-LLaMa
     if sys.platform.startswith("linux"):
         gxx_output = run_cmd("g++ --version", environment=True, capture_output=True)
@@ -140,10 +146,10 @@ def update_dependencies():
     if os.path.exists('setup_cuda.py'):
         os.rename("setup_cuda.py", "setup.py")
     run_cmd("python -m pip install .", environment=True)
-    
+
     # Wheel installation can fail while in the build directory of a package with the same name
     os.chdir("..")
-    
+
     # If the path does not exist, then the install failed
     quant_cuda_path_regex = os.path.join(site_packages_path, "quant_cuda*/")
     if not glob.glob(quant_cuda_path_regex):
@@ -188,7 +194,7 @@ if __name__ == "__main__":
             os.chdir(script_dir)
 
         # Check if a model has been downloaded yet
-        if len(glob.glob("text-generation-webui/models/*/")) == 0:
+        if not glob.glob("text-generation-webui/models/*/"):
             download_model()
             os.chdir(script_dir)
 

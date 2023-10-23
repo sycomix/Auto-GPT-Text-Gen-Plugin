@@ -31,16 +31,16 @@ class MonolithicPrompt(PromptEngine):
         user_name = self.get_user_name()
         if user_name not in ['', None, 'None'] and len(user_name) > 0:
             user_name += ': '
-        elif user_name == None:
+        elif user_name is None:
             user_name = ''
-        
+
         chat_name = self.get_ai_chat_name()
         # If chat_name isn't empty, add a colon and space
         if chat_name not in ['', None, 'None'] and len(chat_name) > 0:
             chat_name += ': '
-        elif chat_name == None:
+        elif chat_name is None:
             chat_name = ''
-        
+
         if not self.is_ai_system_prompt(self.original_system_msg):
             logger.debug(f"{Fore.LIGHTRED_EX}Auto-GPT-Text-Gen-Plugin:{Fore.RESET} The system message is not an agent prompt, returning original message\n\n")
             return self.messages_to_conversation(messages, user_name)
